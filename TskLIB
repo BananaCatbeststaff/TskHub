@@ -122,19 +122,20 @@ local THEMES = {
     },
 
     BlueRuby = {
-PRIMARY = Color3.fromRGB(10, 20, 45),
-SECONDARY = Color3.fromRGB(20, 40, 80),
-SUCCESS = Color3.fromRGB(15, 40, 60),
-WARNING = Color3.fromRGB(25, 50, 75),
-WARNING_SECONDARY = Color3.fromRGB(35, 65, 95),
-DANGER = Color3.fromRGB(30, 35, 60),
-ERROR = Color3.fromRGB(40, 45, 70),
-ERROR_SECONDARY = Color3.fromRGB(50, 55, 80),
-SURFACE = Color3.fromRGB(5, 8, 15),
-CARD = Color3.fromRGB(10, 12, 20),
-TEXT_PRIMARY = Color3.fromRGB(180, 200, 255),
-TEXT_SECONDARY = Color3.fromRGB(120, 140, 200),
-BORDER = Color3.fromRGB(25, 35, 60)
+PRIMARY = Color3.fromRGB(5, 10, 25),
+SECONDARY = Color3.fromRGB(10, 20, 40),
+SUCCESS = Color3.fromRGB(8, 20, 30),
+WARNING = Color3.fromRGB(12, 25, 35),
+WARNING_SECONDARY = Color3.fromRGB(15, 30, 45),
+DANGER = Color3.fromRGB(10, 15, 25),
+ERROR = Color3.fromRGB(15, 20, 30),
+ERROR_SECONDARY = Color3.fromRGB(20, 25, 35),
+SURFACE = Color3.fromRGB(2, 4, 8),
+CARD = Color3.fromRGB(4, 6, 12),
+TEXT_PRIMARY = Color3.fromRGB(160, 180, 220),
+TEXT_SECONDARY = Color3.fromRGB(100, 120, 160),
+BORDER = Color3.fromRGB(15, 20, 30)
+
 
     }
 }

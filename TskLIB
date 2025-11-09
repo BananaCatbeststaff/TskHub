@@ -108,10 +108,10 @@ local THEMES = {
     WhiteRuby = {
         PRIMARY = Color3.fromRGB(225, 29, 72),
         SECONDARY = Color3.fromRGB(244, 63, 94),
-        SUCCESS = Color3.fromRGB(0, 200, 0),
+        SUCCESS = Color3.fromRGB(34, 197, 94),
         WARNING = Color3.fromRGB(234, 179, 8),
         WARNING_SECONDARY = Color3.fromRGB(250, 204, 21),
-        DANGER = Color3.fromRGB(200, 0, 0),
+        DANGER = Color3.fromRGB(190, 18, 60),
         ERROR = Color3.fromRGB(220, 38, 38),
         ERROR_SECONDARY = Color3.fromRGB(248, 113, 113),
         SURFACE = Color3.fromRGB(255, 250, 252),
@@ -122,21 +122,19 @@ local THEMES = {
     },
 
     BlueRuby = {
-PRIMARY = Color3.fromRGB(5, 10, 25),
-SECONDARY = Color3.fromRGB(10, 20, 40),
-SUCCESS = Color3.fromRGB(8, 20, 30),
-WARNING = Color3.fromRGB(12, 25, 35),
-WARNING_SECONDARY = Color3.fromRGB(15, 30, 45),
-DANGER = Color3.fromRGB(10, 15, 25),
-ERROR = Color3.fromRGB(15, 20, 30),
-ERROR_SECONDARY = Color3.fromRGB(20, 25, 35),
-SURFACE = Color3.fromRGB(2, 4, 8),
-CARD = Color3.fromRGB(4, 6, 12),
-TEXT_PRIMARY = Color3.fromRGB(160, 180, 220),
-TEXT_SECONDARY = Color3.fromRGB(100, 120, 160),
-BORDER = Color3.fromRGB(15, 20, 30)
-
-
+        PRIMARY = Color3.fromRGB(30, 58, 138),
+        SECONDARY = Color3.fromRGB(59, 130, 246),
+        SUCCESS = Color3.fromRGB(34, 197, 94),
+        WARNING = Color3.fromRGB(234, 179, 8),
+        WARNING_SECONDARY = Color3.fromRGB(250, 204, 21),
+        DANGER = Color3.fromRGB(239, 68, 68),
+        ERROR = Color3.fromRGB(220, 38, 38),
+        ERROR_SECONDARY = Color3.fromRGB(248, 113, 113),
+        SURFACE = Color3.fromRGB(10, 10, 18),
+        CARD = Color3.fromRGB(20, 24, 36),
+        TEXT_PRIMARY = Color3.fromRGB(240, 249, 255),
+        TEXT_SECONDARY = Color3.fromRGB(147, 197, 253),
+        BORDER = Color3.fromRGB(37, 99, 235)
     }
 }
 
@@ -1183,7 +1181,7 @@ function Labs:AddToggle(tab, config)
     local statusLight = Instance.new("Frame")
     statusLight.Size = UDim2.new(0, 16, 0, 16)
     statusLight.Position = UDim2.new(1, -28, 0.5, -8)
-    statusLight.BackgroundColor3 = currentColors.DANGER
+    statusLight.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
     statusLight.BorderSizePixel = 0
     statusLight.ZIndex = 3
     statusLight.Parent = toggleContainer
@@ -1196,7 +1194,7 @@ function Labs:AddToggle(tab, config)
     lightGlow.Size = UDim2.new(1.5, 0, 1.5, 0)
     lightGlow.Position = UDim2.new(0.5, 0, 0.5, 0)
     lightGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-    lightGlow.BackgroundColor3 = currentColors.DANGER
+    lightGlow.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
     lightGlow.BackgroundTransparency = 0.7
     lightGlow.BorderSizePixel = 0
     lightGlow.ZIndex = 2
@@ -1209,7 +1207,7 @@ function Labs:AddToggle(tab, config)
     local enabled = toggleSettings.Default
     
     local function refreshToggle()
-        local targetColor = enabled and currentColors.SUCCESS or currentColors.DANGER
+        local targetColor = enabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
         animate(statusLight, {BackgroundColor3 = targetColor}, 0.3)
         animate(lightGlow, {BackgroundColor3 = targetColor}, 0.3)
         pcall(toggleSettings.Callback, enabled)
@@ -1241,6 +1239,7 @@ function Labs:AddToggle(tab, config)
         end
     }
 end
+
 
 function Labs:AddSlider(tab, config)
     local sliderSettings = {

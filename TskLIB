@@ -804,6 +804,144 @@ function Labs:CreateWindow(config)
             )
         end
     end)
+        -- === BOTÃO DE ESTADO GLOBAL (NOVO) ===
+    local stateButton = nil
+
+    function Window:CreateStateButton(config)
+        local settings = {
+            Icon = config.Icon or "Toggle",
+            Default = config.Default or false,
+            Tooltip = config.Tooltip or "",
+            Callback = config.Callback or function() end
+        }
+
+        if stateButton then
+            stateButton:Destroy()
+        end
+
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0, 30, 0, 30)
+        btn.Position = UDim2.new(1, -105, 0, 10) -- Ajuste conforme necessário
+        btn.BackgroundColor3 = currentColors.CARD
+        btn.BackgroundTransparency = 0.3
+        btn.BorderSizePixel = 0
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.ZIndex = 3
+        btn.Parent = headerBar
+
+        local btnCorner = Instance.new("UICorner")
+        btnCorner.CornerRadius = UDim.new(0, 8)
+        btnCorner.Parent = btn
+
+        local icon = createIcon(btn, settings.Icon, UDim2.new(0, 20, 0, 20), UDim2.new(0.5, 0, 0.5, 0), 4)
+        icon.AnchorPoint = Vector2.new(0.5, 0.5)
+        if icon:IsA("TextLabel") then
+            icon.TextSize = 14
+        end
+
+        local indicator = Instance.new("Frame")
+        indicator.Size = UDim2.new(0, 6, 0, 6)
+        indicator.Position = UDim2.new(1, -10, 1, -10)
+        indicator.BackgroundColor3 = currentColors.SUCCESS
+        indicator.BorderSizePixel = 0
+        indicator.Visible = settings.Default
+        indicator.ZIndex = 5
+        indicator.Parent = btn
+
+        local indicatorCorner = Instance.new("UICorner")
+        indicatorCorner.CornerRadius = UDim.new(1, 0)
+        indicatorCorner.Parent = indicator
+
+        local enabled = settings.Default
+
+        local function updateState()
+            if enabled then
+                animate(btn, {BackgroundTransparency = 0.1}, 0.2)
+                indicator.Visible = true
+                if icon:IsA("ImageLabel") then
+                    icon.ImageColor3 = currentColors.PRIMARY
+                else
+                    icon.TextColor3 = currentColors.PRIMARY
+                end
+            else
+                animate(btn, {BackgroundTransparency = 0.3}, 0.2)
+                indicator.Visible = false
+                if icon:IsA("ImageLabel") then
+                    icon.ImageColor3 = currentColors.TEXT_SECONDARY
+                else
+                    icon.TextColor3 = currentColors.TEXT_SECONDARY
+                end
+            end
+        end
+
+        btn.MouseEnter:Connect(function()
+            if not enabled then
+                animate(btn, {BackgroundTransparency = 0.2}, 0.15)
+            end
+        end)
+
+        btn.MouseLeave:Connect(function()
+            if not enabled then
+                animate(btn, {BackgroundTransparency = 0.3}, 0.15)
+            end
+        end)
+
+        btn.MouseButton1Click:Connect(function()
+            enabled = not enabled
+            updateState()
+            pcall(settings.Callback, enabled)
+        end)
+
+        -- Tooltip (opcional)
+        if settings.Tooltip ~= "" then
+            local tooltip = Instance.new("TextLabel")
+            tooltip.Size = UDim2.new(0, 120, 0, 24)
+            tooltip.Position = UDim2.new(0.5, 0, 1, 5)
+            tooltip.AnchorPoint = Vector2.new(0.5, 0)
+            tooltip.BackgroundColor3 = currentColors.SURFACE
+            tooltip.BackgroundTransparency = 0.1
+            tooltip.Text = settings.Tooltip
+            tooltip.TextColor3 = currentColors.TEXT_PRIMARY
+            tooltip.Font = Enum.Font.GothamBold
+            tooltip.TextSize = 10
+            tooltip.Visible = false
+            tooltip.ZIndex = 100
+            tooltip.Parent = btn
+
+            local tooltipCorner = Instance.new("UICorner")
+            tooltipCorner.CornerRadius = UDim.new(0, 6)
+            tooltipCorner.Parent = tooltip
+
+            btn.MouseEnter:Connect(function()
+                tooltip.Visible = true
+            end)
+            btn.MouseLeave:Connect(function()
+                tooltip.Visible = false
+            end)
+        end
+
+        updateState()
+        stateButton = btn
+
+        return {
+            Button = btn,
+            SetState = function(state)
+                enabled = state
+                updateState()
+            end,
+            GetState = function()
+                return enabled
+            end,
+            SetIcon = function(newIcon)
+                if icon:IsA("TextLabel") then
+                    icon.Text = newIcon
+                else
+                    icon.Image = newIcon
+                end
+            end
+        }
+    end
     
     local minWidth = 400
     local minHeight = 300

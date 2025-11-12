@@ -512,7 +512,7 @@ end
 function Labs:CreateWindow(config)
     local settings = {
         Title = config.Title or "Labs Hub Panel",
-        Icon = config.Icon or "⭐",
+        Icon = config.Icon or "Star",
         Width = config.Width or 600,
         Height = config.Height or 420,
         Theme = config.Theme or "Normal"
@@ -720,28 +720,13 @@ function Labs:CreateWindow(config)
         local closeTween1 = TweenService:Create(
             mainFrame,
             TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-            {
-                Size = UDim2.new(0, 0, 0, 0),
-                BackgroundTransparency = 1
-            }
+            {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}
         )
-        
-        local closeTween2 = TweenService:Create(
-            shadow,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            {BackgroundTransparency = 1}
-        )
-        
-        local closeTween3 = TweenService:Create(
-            border,
-            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            {BackgroundTransparency = 1}
-        )
-        
+        local closeTween2 = TweenService:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
+        local closeTween3 = TweenService:Create(border, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
         closeTween1:Play()
         closeTween2:Play()
         closeTween3:Play()
-        
         task.wait(0.35)
         screenGui:Destroy()
     end)
@@ -757,14 +742,12 @@ function Labs:CreateWindow(config)
             sidebarPanel.Visible = false
             contentZone.Visible = false
             footerBar.Visible = false
-            
             animate(mainFrame, {Size = UDim2.new(0, mainFrame.AbsoluteSize.X, 0, 50)}, 0.25)
-            minimizeButton.Text = "▲"
+            minimizeButton.Text = "Up Arrow"
         else
             sidebarPanel.Visible = true
             contentZone.Visible = true
             footerBar.Visible = true
-            
             animate(mainFrame, {Size = currentSize}, 0.25)
             minimizeButton.Text = "–"
         end
@@ -778,7 +761,6 @@ function Labs:CreateWindow(config)
             dragging = true
             mousePos = input.Position
             framePos = mainFrame.Position
-            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -804,24 +786,113 @@ function Labs:CreateWindow(config)
             )
         end
     end)
-        -- === BOTÃO DE ESTADO GLOBAL (NOVO) ===
+    
+    local minWidth = 400
+    local minHeight = 300
+    local resizing = false
+    local resizeStartPos = nil
+    local resizeStartSize = nil
+    
+    local resizeCorner = Instance.new("Frame")
+    resizeCorner.Size = UDim2.new(0, 20, 0, 20)
+    resizeCorner.Position = UDim2.new(1, -20, 1, -20)
+    resizeCorner.BackgroundTransparency = 1
+    resizeCorner.ZIndex = 1000
+    resizeCorner.Parent = mainFrame
+    
+    local resizeIndicator = Instance.new("TextLabel")
+    resizeIndicator.Size = UDim2.new(1, 0, 1, 0)
+    resizeIndicator.BackgroundTransparency = 1
+    resizeIndicator.Text = "Resize"
+    resizeIndicator.TextColor3 = currentColors.TEXT_SECONDARY
+    resizeIndicator.TextTransparency = 0.9
+    resizeIndicator.Font = Enum.Font.GothamBold
+    resizeIndicator.TextSize = 16
+    resizeIndicator.ZIndex = 1001
+    resizeIndicator.Parent = resizeCorner
+    
+    resizeCorner.MouseEnter:Connect(function()
+        animate(resizeIndicator, {TextTransparency = 0.3}, 0.2)
+    end)
+    
+    resizeCorner.MouseLeave:Connect(function()
+        if not resizing then
+            animate(resizeIndicator, {TextTransparency = 0.9}, 0.2)
+        end
+    end)
+    
+    local function handleResize()
+        if not resizing then return end
+        local currentPos = UserInputService:GetMouseLocation()
+        local delta = currentPos - resizeStartPos
+        local newWidth = math.max(minWidth, resizeStartSize.X + delta.X)
+        local newHeight = math.max(minHeight, resizeStartSize.Y + delta.Y)
+        mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+        currentSize = mainFrame.Size
+    end
+    
+    resizeCorner.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            resizing = true
+            resizeStartPos = UserInputService:GetMouseLocation()
+            resizeStartSize = mainFrame.AbsoluteSize
+            animate(resizeIndicator, {TextTransparency = 0.3}, 0.1)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and resizing then
+            resizing = false
+            animate(resizeIndicator, {TextTransparency = 0.9}, 0.2)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement and resizing then
+            handleResize()
+        end
+    end)
+    
+    mainFrame.Size = UDim2.new(0, 0, 0, 0)
+    animate(mainFrame, {Size = fullSize}, 0.4)
+    
+    -- === OBJETO WINDOW COM CreateStateButton ===
+    local Window = {
+        GUI = screenGui,
+        Main = mainFrame,
+        Sidebar = sidebarPanel,
+        PagesContainer = pageHolder,
+        Tabs = {},
+        CurrentTab = nil,
+        SetHideKeybind = function(newKey)
+            hideKeybind = newKey
+        end,
+        GetHideKeybind = function()
+            return hideKeybind
+        end,
+        ToggleVisibility = function()
+            mainFrame.Visible = not mainFrame.Visible
+        end
+    }
+
     local stateButton = nil
 
-    function Window:CreateStateButton(config)
-        local settings = {
-            Icon = config.Icon or "Toggle",
+    -- === MÉTODO: CreateStateButton ===
+    Window.CreateStateButton = function(self, config)
+        local cfg = {
+            Icon = config.Icon or "Power",
             Default = config.Default or false,
             Tooltip = config.Tooltip or "",
             Callback = config.Callback or function() end
         }
 
-        if stateButton then
+        if stateButton and stateButton.Parent then
             stateButton:Destroy()
         end
 
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(0, 30, 0, 30)
-        btn.Position = UDim2.new(1, -105, 0, 10) -- Ajuste conforme necessário
+        btn.Position = UDim2.new(1, -105, 0, 10)
         btn.BackgroundColor3 = currentColors.CARD
         btn.BackgroundTransparency = 0.3
         btn.BorderSizePixel = 0
@@ -834,7 +905,7 @@ function Labs:CreateWindow(config)
         btnCorner.CornerRadius = UDim.new(0, 8)
         btnCorner.Parent = btn
 
-        local icon = createIcon(btn, settings.Icon, UDim2.new(0, 20, 0, 20), UDim2.new(0.5, 0, 0.5, 0), 4)
+        local icon = createIcon(btn, cfg.Icon, UDim2.new(0, 20, 0, 20), UDim2.new(0.5, 0, 0.5, 0), 4)
         icon.AnchorPoint = Vector2.new(0.5, 0.5)
         if icon:IsA("TextLabel") then
             icon.TextSize = 14
@@ -844,8 +915,7 @@ function Labs:CreateWindow(config)
         indicator.Size = UDim2.new(0, 6, 0, 6)
         indicator.Position = UDim2.new(1, -10, 1, -10)
         indicator.BackgroundColor3 = currentColors.SUCCESS
-        indicator.BorderSizePixel = 0
-        indicator.Visible = settings.Default
+        indicator.Visible = cfg.Default
         indicator.ZIndex = 5
         indicator.Parent = btn
 
@@ -853,7 +923,7 @@ function Labs:CreateWindow(config)
         indicatorCorner.CornerRadius = UDim.new(1, 0)
         indicatorCorner.Parent = indicator
 
-        local enabled = settings.Default
+        local enabled = cfg.Default
 
         local function updateState()
             if enabled then
@@ -890,18 +960,18 @@ function Labs:CreateWindow(config)
         btn.MouseButton1Click:Connect(function()
             enabled = not enabled
             updateState()
-            pcall(settings.Callback, enabled)
+            pcall(cfg.Callback, enabled)
         end)
 
-        -- Tooltip (opcional)
-        if settings.Tooltip ~= "" then
+        -- Tooltip
+        if cfg.Tooltip ~= "" then
             local tooltip = Instance.new("TextLabel")
             tooltip.Size = UDim2.new(0, 120, 0, 24)
             tooltip.Position = UDim2.new(0.5, 0, 1, 5)
             tooltip.AnchorPoint = Vector2.new(0.5, 0)
             tooltip.BackgroundColor3 = currentColors.SURFACE
             tooltip.BackgroundTransparency = 0.1
-            tooltip.Text = settings.Tooltip
+            tooltip.Text = cfg.Tooltip
             tooltip.TextColor3 = currentColors.TEXT_PRIMARY
             tooltip.Font = Enum.Font.GothamBold
             tooltip.TextSize = 10
@@ -909,16 +979,12 @@ function Labs:CreateWindow(config)
             tooltip.ZIndex = 100
             tooltip.Parent = btn
 
-            local tooltipCorner = Instance.new("UICorner")
-            tooltipCorner.CornerRadius = UDim.new(0, 6)
-            tooltipCorner.Parent = tooltip
+            local tCorner = Instance.new("UICorner")
+            tCorner.CornerRadius = UDim.new(0, 6)
+            tCorner.Parent = tooltip
 
-            btn.MouseEnter:Connect(function()
-                tooltip.Visible = true
-            end)
-            btn.MouseLeave:Connect(function()
-                tooltip.Visible = false
-            end)
+            btn.MouseEnter:Connect(function() tooltip.Visible = true end)
+            btn.MouseLeave:Connect(function() tooltip.Visible = false end)
         end
 
         updateState()
@@ -942,127 +1008,42 @@ function Labs:CreateWindow(config)
             end
         }
     end
-    
-    local minWidth = 400
-    local minHeight = 300
-    local resizing = false
-    local resizeStartPos = nil
-    local resizeStartSize = nil
-    
-    local resizeCorner = Instance.new("Frame")
-    resizeCorner.Size = UDim2.new(0, 20, 0, 20)
-    resizeCorner.Position = UDim2.new(1, -20, 1, -20)
-    resizeCorner.BackgroundTransparency = 1
-    resizeCorner.ZIndex = 1000
-    resizeCorner.Parent = mainFrame
-    
-    local resizeIndicator = Instance.new("TextLabel")
-    resizeIndicator.Size = UDim2.new(1, 0, 1, 0)
-    resizeIndicator.BackgroundTransparency = 1
-    resizeIndicator.Text = "⋰"
-    resizeIndicator.TextColor3 = currentColors.TEXT_SECONDARY
-    resizeIndicator.TextTransparency = 0.9
-    resizeIndicator.Font = Enum.Font.GothamBold
-    resizeIndicator.TextSize = 16
-    resizeIndicator.ZIndex = 1001
-    resizeIndicator.Parent = resizeCorner
-    
-    resizeCorner.MouseEnter:Connect(function()
-        animate(resizeIndicator, {TextTransparency = 0.3}, 0.2)
-    end)
-    
-    resizeCorner.MouseLeave:Connect(function()
-        if not resizing then
-            animate(resizeIndicator, {TextTransparency = 0.9}, 0.2)
-        end
-    end)
-    
-    local function handleResize()
-        if not resizing then return end
-        
-        local currentPos = UserInputService:GetMouseLocation()
-        local delta = currentPos - resizeStartPos
-        
-        local newWidth = math.max(minWidth, resizeStartSize.X + delta.X)
-        local newHeight = math.max(minHeight, resizeStartSize.Y + delta.Y)
-        
-        mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-        currentSize = mainFrame.Size
-    end
-    
-    resizeCorner.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            resizing = true
-            resizeStartPos = UserInputService:GetMouseLocation()
-            resizeStartSize = mainFrame.AbsoluteSize
-            animate(resizeIndicator, {TextTransparency = 0.3}, 0.1)
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if resizing then
-                resizing = false
-                animate(resizeIndicator, {TextTransparency = 0.9}, 0.2)
-            end
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and resizing then
-            handleResize()
-        end
-    end)
-    
-    mainFrame.Size = UDim2.new(0, 0, 0, 0)
-    animate(mainFrame, {Size = fullSize}, 0.4)
-    
-    local Window = {
-        GUI = screenGui,
-        Main = mainFrame,
-        Sidebar = sidebarPanel,
-        PagesContainer = pageHolder,
-        Tabs = {},
-        CurrentTab = nil
-    }
-    
+
     local hideKeybind = "LeftControl"
     local guiVisible = true
-    
+
     local function toggleVisibility()
         guiVisible = not guiVisible
         mainFrame.Visible = guiVisible
     end
-    
+
     local hideKeybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if gameProcessed then return end
-        
         if input.KeyCode.Name == hideKeybind then
             toggleVisibility()
         end
     end)
-    
+
     screenGui.Destroying:Connect(function()
         if hideKeybindConnection then
             hideKeybindConnection:Disconnect()
         end
     end)
-    
+
     Window.SetHideKeybind = function(newKey)
         hideKeybind = newKey
     end
-    
+
     Window.GetHideKeybind = function()
         return hideKeybind
     end
-    
+
     Window.ToggleVisibility = toggleVisibility
-    
+
     table.insert(Labs.Windows, Window)
-    
+
     return Window
 end
-
 function Labs:AddTab(window, config)
     local tabSettings = {
         Title = config.Title or "Tab",

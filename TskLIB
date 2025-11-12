@@ -878,6 +878,7 @@ function Labs:CreateWindow(config)
     local stateButton = nil
 
     -- === MÉTODO: CreateStateButton ===
+        -- === MÉTODO: CreateStateButton (CORRIGIDO PARA ':' ) ===
     Window.CreateStateButton = function(self, config)
         local cfg = {
             Icon = config.Icon or "Power",

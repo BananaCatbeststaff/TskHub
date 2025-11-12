@@ -856,7 +856,7 @@ function Labs:CreateWindow(config)
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
     animate(mainFrame, {Size = fullSize}, 0.4)
     
-    -- === OBJETO WINDOW COM CreateStateButton ===
+    -- === OBJETO WINDOW (COM ACESSO A headerBar E stateButton) ===
     local Window = {
         GUI = screenGui,
         Main = mainFrame,
@@ -872,13 +872,13 @@ function Labs:CreateWindow(config)
         end,
         ToggleVisibility = function()
             mainFrame.Visible = not mainFrame.Visible
-        end
+        end,
+        -- NOVO: Referências internas
+        _headerBar = headerBar,
+        _stateButton = nil
     }
 
-    local stateButton = nil
-
-    -- === MÉTODO: CreateStateButton ===
-        -- === MÉTODO: CreateStateButton (CORRIGIDO PARA ':' ) ===
+    -- === MÉTODO: CreateStateButton (COM ACESSO CORRETO) ===
     Window.CreateStateButton = function(self, config)
         local cfg = {
             Icon = config.Icon or "Power",
@@ -887,20 +887,21 @@ function Labs:CreateWindow(config)
             Callback = config.Callback or function() end
         }
 
-        if stateButton and stateButton.Parent then
-            stateButton:Destroy()
+        -- Remove botão antigo
+        if self._stateButton and self._stateButton.Parent then
+            self._stateButton:Destroy()
         end
 
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(0, 30, 0, 30)
-        btn.Position = UDim2.new(1, -105, 0, 10)
+        btn.Position = UDim2.new(1, -105, 0, 10)  -- Posição fixa no header
         btn.BackgroundColor3 = currentColors.CARD
         btn.BackgroundTransparency = 0.3
         btn.BorderSizePixel = 0
         btn.Text = ""
         btn.AutoButtonColor = false
         btn.ZIndex = 3
-        btn.Parent = headerBar
+        btn.Parent = self._headerBar  -- ← AQUI ESTAVA O PROBLEMA!
 
         local btnCorner = Instance.new("UICorner")
         btnCorner.CornerRadius = UDim.new(0, 8)
@@ -989,7 +990,7 @@ function Labs:CreateWindow(config)
         end
 
         updateState()
-        stateButton = btn
+        self._stateButton = btn  -- Salva referência
 
         return {
             Button = btn,
@@ -1010,6 +1011,7 @@ function Labs:CreateWindow(config)
         }
     end
 
+    -- === KEYBIND (hide/show) ===
     local hideKeybind = "LeftControl"
     local guiVisible = true
 

@@ -1010,6 +1010,135 @@ function Labs:CreateWindow(config)
             end
         }
     end
+        -- === MÉTODO: CreateBananaButton (BANANA HUB ANIMADO) ===
+    Window.CreateBananaButton = function(self, config)
+        local cfg = {
+            Text = config.Text or "Banana Hub",
+            Icon = config.Icon or "rbxassetid://132140671145829",
+            Default = config.Default or false,
+            Callback = config.Callback or function() end
+        }
+
+        -- Remove botão antigo
+        if self._bananaButton and self._bananaButton.Parent then
+            self._bananaButton:Destroy()
+        end
+
+        -- Frame principal do botão
+        local bananaFrame = Instance.new("Frame")
+        bananaFrame.Name = "BananaButton"
+        bananaFrame.Size = UDim2.new(0, 300, 0, 50)
+        bananaFrame.Position = UDim2.new(1, -320, 0, 10)
+        bananaFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        bananaFrame.BackgroundTransparency = 0.3
+        bananaFrame.BorderSizePixel = 0
+        bananaFrame.ZIndex = 4
+        bananaFrame.Parent = self._headerBar
+        self._bananaButton = bananaFrame
+
+        local uicorner = Instance.new("UICorner")
+        uicorner.CornerRadius = UDim.new(1, 1)
+        uicorner.Parent = bananaFrame
+
+        -- Ícone
+        local imageLabel = Instance.new("ImageLabel")
+        imageLabel.Parent = bananaFrame
+        imageLabel.BackgroundTransparency = 1
+        imageLabel.Position = UDim2.new(0, 15, 0.5, -15)
+        imageLabel.Size = UDim2.new(0, 30, 0, 30)
+        imageLabel.Image = cfg.Icon
+
+        -- Barra separadora
+        local separator = Instance.new("Frame")
+        separator.Parent = bananaFrame
+        separator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        separator.BackgroundTransparency = 0.7
+        separator.BorderSizePixel = 0
+        separator.Position = UDim2.new(0, 60, 0.2, 0)
+        separator.Size = UDim2.new(0, 2, 0.6, 0)
+
+        -- Texto
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Parent = bananaFrame
+        textLabel.BackgroundTransparency = 1
+        textLabel.Size = UDim2.new(0, 220, 0, 50)
+        textLabel.Position = UDim2.new(0, 75, 0, 0)
+        textLabel.Font = Enum.Font.GothamMedium
+        textLabel.Text = cfg.Text
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textLabel.TextSize = 20
+        textLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+        -- Borda animada
+        local stroke = Instance.new("UIStroke")
+        stroke.Parent = bananaFrame
+        stroke.Thickness = 5
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        stroke.Transparency = 0
+
+        -- Gradiente (vermelho, preto e laranja)
+        local gradient = Instance.new("UIGradient")
+        gradient.Parent = stroke
+        gradient.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)), -- Vermelho
+            ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 0, 0)), -- Preto
+            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 157, 44)) -- Laranja
+        }
+        gradient.Rotation = 250
+
+        -- Animação do gradiente girando
+        task.spawn(function()
+            while bananaFrame.Parent do
+                task.wait(0.03)
+                if gradient and gradient.Parent then
+                    gradient.Rotation = (gradient.Rotation + 1) % 360
+                end
+            end
+        end)
+
+        local enabled = cfg.Default
+
+        local function updateState()
+            if enabled then
+                bananaFrame.BackgroundTransparency = 0.1
+                textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                imageLabel.ImageColor3 = Color3.fromRGB(255, 255, 255)
+            else
+                bananaFrame.BackgroundTransparency = 0.5
+                textLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+                imageLabel.ImageColor3 = Color3.fromRGB(150, 150, 150)
+            end
+        end
+
+        -- Clique para toggle
+        bananaFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                enabled = not enabled
+                updateState()
+                pcall(cfg.Callback, enabled)
+            end
+        end)
+
+        updateState()
+
+        return {
+            Frame = bananaFrame,
+            SetState = function(state)
+                enabled = state
+                updateState()
+            end,
+            GetState = function()
+                return enabled
+            end,
+            SetText = function(newText)
+                textLabel.Text = newText
+            end,
+            SetIcon = function(newIcon)
+                imageLabel.Image = newIcon
+            end
+        }
+    end
 
     -- === KEYBIND (hide/show) ===
     local hideKeybind = "LeftControl"
